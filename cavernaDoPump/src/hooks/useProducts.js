@@ -1,32 +1,38 @@
 import { useState, useEffect } from 'react';
 
+// Objeto com descrições movido para o hook, onde a lógica de dados pertence.
+const categoryDescriptions = {
+  'Suplementos': 'Potencialize seus resultados com nossa seleção de proteínas, creatinas e aminoácidos da mais alta qualidade.',
+  'Acessórios': 'De coqueteleiras a luvas, encontre os acessórios essenciais para um treino mais seguro e eficaz.',
+  'Dr. Peanut': 'A energia que você precisa com o sabor que você ama. As melhores pastas de amendoim para sua dieta.',
+  'Laricas': 'Opções de snacks saudáveis e proteicos para matar a fome sem sair da dieta.',
+  'Destaques': 'Confira uma seleção aleatória dos produtos favoritos da nossa caverna, escolhidos para o seu melhor pump.'
+};
+
 export function useProducts(categoryName) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pageInfo, setPageInfo] = useState({ title: '', description: '' });
 
   useEffect(() => {
     setLoading(true);
     setError(null);
 
-    // 1. A URL agora aponta para a nossa API segura
-    const API_URL = '/api/getProducts';
-
-    // 2. Usamos fetch para buscar os dados
-    fetch(API_URL)
+    fetch('/api/getProducts')
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Falha na resposta da rede');
-        }
+        if (!response.ok) throw new Error('Falha ao buscar produtos.');
         return response.json();
       })
       .then(allProducts => {
-        let finalProducts = allProducts;
+        const currentTitle = categoryName || 'Destaques';
+        const currentDescription = categoryDescriptions[currentTitle] || 'Explore nossos produtos.';
+        setPageInfo({ title: currentTitle, description: currentDescription });
 
-        // 3. A lógica de filtro e embaralhamento agora vive aqui
+        let finalProducts = allProducts;
         if (categoryName) {
           finalProducts = allProducts.filter(
-            product => product.category.toLowerCase() === categoryName.toLowerCase()
+            p => p.category.toLowerCase() === categoryName.toLowerCase()
           );
         } else {
           const shuffled = [...allProducts];
@@ -36,18 +42,12 @@ export function useProducts(categoryName) {
           }
           finalProducts = shuffled.slice(0, 10);
         }
-        
         setProducts(finalProducts);
       })
-      .catch(err => {
-        console.error("Erro ao buscar produtos:", err);
-        setError("Não foi possível carregar os produtos. Tente novamente mais tarde.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .catch(err => setError('Não foi possível carregar os produtos.'))
+      .finally(() => setLoading(false));
 
-  }, [categoryName]); // O efeito roda sempre que a categoria muda
+  }, [categoryName]);
 
-  return { products, loading, error };
+  return { products, loading, error, pageInfo };
 }

@@ -2,7 +2,6 @@ import { google } from 'googleapis';
 
 export default async function handler(req, res) {
   try {
-    // As credenciais virão das Environment Variables (variáveis de ambiente)
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
@@ -15,10 +14,9 @@ export default async function handler(req, res) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Página1', // Mude se o nome da sua aba for diferente
+      range: 'Página1',
     });
 
-    // Converte os dados da planilha (array de arrays) para um array de objetos
     const rows = response.data.values;
     if (!rows || rows.length === 0) {
       return res.status(200).json([]);
@@ -31,6 +29,10 @@ export default async function handler(req, res) {
       });
       return rowData;
     });
+
+    // --- ADIÇÃO PARA CONTROLE DE CACHE ---
+    // Define por quanto tempo a Vercel deve manter os dados em cache antes de buscar uma nova versão.
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
 
     // Retorna os dados como JSON
     res.status(200).json(data);

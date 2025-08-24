@@ -1,89 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
-import Papa from 'papaparse';
-import { Container, Grid, CircularProgress, Box, Typography, Stack } from '@mui/material';
-import ProductCard from '../Card/ProductCard'; // Verifique se este caminho está correto
-
-// Lembre-se de importar o seu logo
+import { Container, Grid, CircularProgress, Box, Typography, Paper } from '@mui/material';
+import ProductCard from '../Card/ProductCard';
+import { useProducts } from '../../hooks/useProducts'; // Importa o hook
 import logo from '../../assets/logoCaverna.png';
 
 function ProductGrid() {
-    const { categoryName } = useParams();
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const { categoryName } = useParams();
+  const { products, loading, error, pageInfo } = useProducts(categoryName);
 
-    const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1d8rmopO33GX8nV_Gwrc7FYUwBqORcSoszkY35TVl7as/export?format=csv';
+  // Lógica para separar o produto em destaque
+  const featuredProduct = !loading && !error && products.length > 0 ? products[0] : null;
+  const otherProducts = !loading && !error && products.length > 1 ? products.slice(1) : [];
 
-    useEffect(() => {
-        setLoading(true);
-        Papa.parse(GOOGLE_SHEET_URL, {
-            download: true,
-            header: true,
-            complete: (results) => {
-                const allProducts = results.data.filter(p => p.name && p.name.trim() !== '');
-
-                if (categoryName) {
-                    const filteredProducts = allProducts.filter(
-                        product => product.category.toLowerCase() === categoryName.toLowerCase()
-                    );
-                    setProducts(filteredProducts);
-                } else {
-                    const shuffled = [...allProducts];
-                    for (let i = shuffled.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                    }
-                    const randomProducts = shuffled.slice(0, 10);
-                    setProducts(randomProducts);
-                }
-                setLoading(false);
-            },
-        });
-    }, [categoryName]);
-
+  if (loading) {
     return (
-        <Box sx={{ py: 8, bgcolor: 'background.default' }}>
-            <Container maxWidth="lg">
-
-                {/* Bloco 1: O Cabeçalho da Página (Logo e Título) */}
-                <Stack alignItems="center" spacing={2} sx={{ mb: 6 }}>
-                    <img
-                        src={logo} // Usando a variável do logo importado
-                        alt="Logo Caverna do Pump"
-                        style={{
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '50%',
-                            objectFit: 'cover'
-                        }}
-                    />
-                    <Typography variant="h4" component="h2" fontWeight="bold" sx={{
-                        background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.warning.light} 90%)`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                    }}>
-                        {categoryName || 'Destaques'}
-                    </Typography>
-                </Stack> {/* Fim do Cabeçalho da Página */}
-
-                {/* Bloco 2: A Grade de Produtos (ou o ícone de carregando) */}
-                {/* Esta parte fica FORA do Stack do cabeçalho */}
-                {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                        <CircularProgress color="primary" />
-                    </Box>
-                ) : (
-                    <Grid container spacing={4} alignItems="stretch">
-                        {products.map((product, index) => (
-                            <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                                <ProductCard product={product} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
-            </Container>
-        </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress color="primary" />
+      </Box>
     );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ py: 8, bgcolor: 'background.default' }}>
+      <Container maxWidth="lg">
+        <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, mb: 6, borderRadius: 3, bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200' }}>
+          <Grid container spacing={4} alignItems="center">
+            {/* Grid v2: Removido 'item' */}
+            <Grid xs={12} md={3} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+              <img src={logo} alt="Logo" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover' }}/>
+            </Grid>
+            {/* Grid v2: Removido 'item' */}
+            <Grid xs={12} md={9}>
+              <Typography variant="h3" component="h1" fontWeight="bold" sx={{ background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.warning.light} 90%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                {pageInfo.title}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                {pageInfo.description}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        <Grid container spacing={4} alignItems="stretch">
+          {featuredProduct && (
+            // Grid v2: Removido 'item'
+            <Grid xs={12} sx={{ display: { xs: 'none', md: 'block' } }}>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Em Destaque</Typography>
+              <ProductCard product={featuredProduct} featured={true} />
+            </Grid>
+          )}
+
+          {otherProducts.map((product, index) => (
+            // Grid v2: Removido 'item'
+            <Grid key={index} xs={12} sm={6} md={4} lg={3}>
+              <ProductCard product={product} />
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </Box>
+  );
 }
 
 export default ProductGrid;
