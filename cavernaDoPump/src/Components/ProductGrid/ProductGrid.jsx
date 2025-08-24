@@ -62,24 +62,29 @@ function ProductGrid() {
                             objectFit: 'cover'
                         }}
                     />
-                    <Typography variant="h4" component="h2" fontWeight="bold">
+                    <Typography variant="h4" component="h2" fontWeight="bold" sx={{
+                        background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.warning.light} 90%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}
+                    >
                         {categoryName || 'Destaques'}
                     </Typography>
-                
 
-                {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                        <CircularProgress color="primary" />
-                    </Box>
-                ) : (
-                    <Grid container spacing={4} alignItems="stretch">
-                        {products.map((product, index) => (
-                            <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                                <ProductCard product={product} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
+
+                    {loading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                            <CircularProgress color="primary" />
+                        </Box>
+                    ) : (
+                        <Grid container spacing={4} alignItems="stretch">
+                            {products.map((product, index) => (
+                                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                                    <ProductCard product={product} />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
                 </Stack>
             </Container>
         </Box>

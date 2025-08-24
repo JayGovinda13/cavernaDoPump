@@ -1,31 +1,19 @@
-import { useState } from 'react'
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Header from './Components/Header/Header'
+import Layout from './Components/Layout/Layout';
 import LandingPage from './pages/LadingPage';
-import ProductGrid from './Components/ProductGrid/ProductGrid'
-
-
+import ProductGrid from './Components/ProductGrid/ProductGrid';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <Header /> 
-      <main>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-
-          {/* Rota para todos os produtos */}
-          <Route path="/loja" element={<ProductGrid />} />
-
-          {/* Nova Rota Dinâmica para Categorias */}
-          <Route path="/categoria/:categoryName" element={<ProductGrid />} />
-
-        </Routes>
-      </main>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route element={<Layout />}>
+        <Route path="/loja" element={<ProductGrid />} />
+        <Route path="/categoria/:categoryName" element={<ProductGrid />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;
