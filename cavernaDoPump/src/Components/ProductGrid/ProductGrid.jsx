@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Importa o hook para ler a URL
+import { useParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import { Container, Grid, CircularProgress, Box, Typography, Stack } from '@mui/material';
-import ProductCard from '../Card/ProductCard';
+import ProductCard from '../Card/ProductCard'; // Verifique se este caminho está correto
+
+// Lembre-se de importar o seu logo
+import logo from '../../assets/logoCaverna.png';
 
 function ProductGrid() {
-    // useParams vai pegar a categoria da URL (ex: "Suplementos")
     const { categoryName } = useParams();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,40 +22,33 @@ function ProductGrid() {
             complete: (results) => {
                 const allProducts = results.data.filter(p => p.name && p.name.trim() !== '');
 
-                // Se houver uma categoria na URL, filtra os produtos
                 if (categoryName) {
                     const filteredProducts = allProducts.filter(
                         product => product.category.toLowerCase() === categoryName.toLowerCase()
                     );
                     setProducts(filteredProducts);
                 } else {
-                    // --- NOVA LÓGICA PARA /loja ---
-                    // 1. Embaralha a lista de todos os produtos
-                    const shuffled = [...allProducts]; // Cria uma cópia para não alterar a original
+                    const shuffled = [...allProducts];
                     for (let i = shuffled.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
-                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Troca os elementos
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
                     }
-
-                    // 2. Pega apenas os 10 primeiros produtos da lista embaralhada
                     const randomProducts = shuffled.slice(0, 10);
-
                     setProducts(randomProducts);
                 }
-
                 setLoading(false);
             },
         });
-    }, [categoryName]); // Este efeito roda sempre que a categoria na URL muda
+    }, [categoryName]);
 
     return (
         <Box sx={{ py: 8, bgcolor: 'background.default' }}>
             <Container maxWidth="lg">
 
-                {/* 2. Adicione o Stack para alinhar o logo e o título */}
+                {/* Bloco 1: O Cabeçalho da Página (Logo e Título) */}
                 <Stack alignItems="center" spacing={2} sx={{ mb: 6 }}>
                     <img
-                        src={'./logoCaverna.png'}
+                        src={logo} // Usando a variável do logo importado
                         alt="Logo Caverna do Pump"
                         style={{
                             width: '100px',
@@ -66,26 +61,26 @@ function ProductGrid() {
                         background: (theme) => `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.warning.light} 90%)`,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                    }}
-                    >
+                    }}>
                         {categoryName || 'Destaques'}
                     </Typography>
+                </Stack> {/* Fim do Cabeçalho da Página */}
 
-
-                    {loading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                            <CircularProgress color="primary" />
-                        </Box>
-                    ) : (
-                        <Grid container spacing={4} alignItems="center">
-                            {products.map((product, index) => (
-                                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                                    <ProductCard product={product} />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    )}
-                </Stack>
+                {/* Bloco 2: A Grade de Produtos (ou o ícone de carregando) */}
+                {/* Esta parte fica FORA do Stack do cabeçalho */}
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                        <CircularProgress color="primary" />
+                    </Box>
+                ) : (
+                    <Grid container spacing={4} alignItems="stretch">
+                        {products.map((product, index) => (
+                            <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                                <ProductCard product={product} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
             </Container>
         </Box>
     );
