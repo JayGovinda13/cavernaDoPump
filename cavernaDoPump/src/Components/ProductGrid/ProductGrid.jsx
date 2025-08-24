@@ -77,7 +77,7 @@ function ProductGrid() {
                             <CircularProgress color="primary" />
                         </Box>
                     ) : (
-                        <Grid container spacing={4} alignItems="stretch">
+                        <Grid container spacing={4} alignItems="center">
                             {products.map((product, index) => (
                                 <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
                                     <ProductCard product={product} />

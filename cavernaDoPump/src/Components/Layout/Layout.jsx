@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom'; // Importante: Outlet renderiza as rotas filhas
 import { Box } from '@mui/material';
 import Header from '../Header/Header';
+import Footer from '../Footer/Footer';
 
 // Este componente serve como o "molde" para as páginas de conteúdo
 function Layout() {
@@ -23,7 +24,7 @@ function Layout() {
         <Outlet />
       </Box>
 
-      {/* Você pode adicionar um <Footer /> aqui no futuro */}
+   <Footer />
     </Box>
   );
 }
